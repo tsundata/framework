@@ -25,6 +25,7 @@ func FormatAsDate(t time.Time) string {
 
 func main() {
 	r := web.New()
+	r.Use(middleware.Recovery())
 	r.Use(middleware.Logger())
 	r.SetFuncMap(template.FuncMap{"FormatAsDate": FormatAsDate})
 	r.LoadHTMLGlob("templates/*")
@@ -58,6 +59,11 @@ func main() {
 			})
 		})
 	}
+
+	r.GET("/panic", func(c *web.Context) {
+		names := []string{"abc"}
+		c.String(http.StatusOK, names[100])
+	})
 
 	r.Run(":5000")
 }
