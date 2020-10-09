@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"time"
@@ -16,11 +18,20 @@ func onlyForV2() web.HandlerFunc {
 	}
 }
 
+func FormatAsDate(t time.Time) string {
+	y, m, d := t.Date()
+	return fmt.Sprintf("%d-%02d-%02d", y, m, d)
+}
+
 func main() {
 	r := web.New()
 	r.Use(middleware.Logger())
+	r.SetFuncMap(template.FuncMap{"FormatAsDate": FormatAsDate})
+	r.LoadHTMLGlob("templates/*")
+	r.Static("/assets", "./static")
+
 	r.GET("/", func(c *web.Context) {
-		c.HTML(http.StatusOK, "<h1>Home</h1>")
+		c.String(http.StatusOK, "home")
 	})
 
 	v1 := r.Group("/v1")
@@ -33,10 +44,6 @@ func main() {
 			c.String(http.StatusOK, "Hi %s, %s", c.Param("name"), c.Path)
 		})
 	}
-
-	r.GET("/assets/*filepath", func(c *web.Context) {
-		c.JSON(http.StatusOK, web.H{"filepath": c.Param("filepath")})
-	})
 
 	v2 := r.Group("/v2")
 	v2.Use(onlyForV2())

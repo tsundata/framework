@@ -3,6 +3,7 @@ package web
 import (
 	"log"
 	"net/http"
+	"path"
 	"strings"
 )
 
@@ -131,4 +132,24 @@ func (g *RouterGroup) DELETE(pattern string, handler HandlerFunc) {
 
 func (g *RouterGroup) Use(middleware ...HandlerFunc) {
 	g.middleware = append(g.middleware, middleware...)
+}
+
+func (g *RouterGroup) createStaticHandler(relativePath string, fs http.FileSystem) HandlerFunc {
+	absolutePath := path.Join(g.prefix, relativePath)
+	fileServer := http.StripPrefix(absolutePath, http.FileServer(fs))
+	return func(c *Context) {
+		file := c.Param("filepath")
+		if _, err := fs.Open(file); err != nil {
+			c.Status(http.StatusNotFound)
+			return
+		}
+
+		fileServer.ServeHTTP(c.Writer, c.Req)
+	}
+}
+
+func (g *RouterGroup) Static(relativePath string, root string) {
+	handler := g.createStaticHandler(relativePath, http.Dir(root))
+	urlPattern := path.Join(relativePath, "/*filepath")
+	g.GET(urlPattern, handler)
 }
