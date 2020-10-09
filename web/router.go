@@ -34,7 +34,7 @@ func parsePattern(pattern string) []string {
 }
 
 func (r *router) addRoute(method string, pattern string, handler HandlerFunc) {
-	log.Printf("Route %6s - %s", method, pattern)
+	log.Printf("Route %6s %s", method, pattern)
 
 	parts := parsePattern(pattern)
 
@@ -85,4 +85,43 @@ func (r *router) handler(c *Context) {
 	} else {
 		c.String(http.StatusNotFound, "404 NOT FOUND: %s\n", c.Path)
 	}
+}
+
+type RouterGroup struct {
+	prefix     string
+	middleware []HandlerFunc
+	parent     *RouterGroup
+	engine     *Engine
+}
+
+func (g *RouterGroup) Group(prefix string) *RouterGroup {
+	engine := g.engine
+	newGroup := &RouterGroup{
+		prefix: g.prefix + prefix,
+		parent: g,
+		engine: engine,
+	}
+	engine.groups = append(engine.groups, newGroup)
+	return newGroup
+}
+
+func (g *RouterGroup) addRoute(method string, comp string, handler HandlerFunc) {
+	pattern := g.prefix + comp
+	g.engine.router.addRoute(method, pattern, handler)
+}
+
+func (g *RouterGroup) GET(pattern string, handler HandlerFunc) {
+	g.addRoute("GET", pattern, handler)
+}
+
+func (g *RouterGroup) POST(pattern string, handler HandlerFunc) {
+	g.addRoute("POST", pattern, handler)
+}
+
+func (g *RouterGroup) PUT(pattern string, handler HandlerFunc) {
+	g.addRoute("PUT", pattern, handler)
+}
+
+func (g *RouterGroup) DELETE(pattern string, handler HandlerFunc) {
+	g.addRoute("DELETE", pattern, handler)
 }
