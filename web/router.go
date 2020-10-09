@@ -79,12 +79,15 @@ func (r *router) handler(c *Context) {
 	n, params := r.getRoute(c.Method, c.Path)
 
 	if n != nil {
-		c.Params = params
 		key := c.Method + "-" + n.pattern
-		r.handlers[key](c)
+		c.Params = params
+		c.handlers = append(c.handlers, r.handlers[key])
 	} else {
-		c.String(http.StatusNotFound, "404 NOT FOUND: %s\n", c.Path)
+		c.handlers = append(c.handlers, func(c *Context) {
+			c.String(http.StatusNotFound, "404 NOT FOUND: %s\n", c.Path)
+		})
 	}
+	c.Next()
 }
 
 type RouterGroup struct {
@@ -124,4 +127,8 @@ func (g *RouterGroup) PUT(pattern string, handler HandlerFunc) {
 
 func (g *RouterGroup) DELETE(pattern string, handler HandlerFunc) {
 	g.addRoute("DELETE", pattern, handler)
+}
+
+func (g *RouterGroup) Use(middleware ...HandlerFunc) {
+	g.middleware = append(g.middleware, middleware...)
 }
