@@ -1,4 +1,4 @@
-package web
+package framework
 
 import (
 	"html/template"

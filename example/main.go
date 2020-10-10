@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
+	web "github.com/sysatom/framework"
+	"github.com/sysatom/framework/middleware"
 	"html/template"
 	"log"
 	"net/http"
 	"time"
-	"web"
-	"web/middleware"
 )
 
 func onlyForV2() web.HandlerFunc {

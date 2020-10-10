@@ -2,11 +2,11 @@ package middleware
 
 import (
 	"fmt"
+	"github.com/sysatom/framework"
 	"log"
 	"net/http"
 	"runtime"
 	"strings"
-	"web"
 )
 
 func trace(message string) string {
@@ -23,8 +23,8 @@ func trace(message string) string {
 	return str.String()
 }
 
-func Recovery() web.HandlerFunc {
-	return func(c *web.Context) {
+func Recovery() framework.HandlerFunc {
+	return func(c *framework.Context) {
 		defer func() {
 			if err := recover(); err != nil {
 				message := fmt.Sprintf("%s", err)
