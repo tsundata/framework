@@ -1,9 +1,10 @@
 package middleware
 
 import (
-	"github.com/sysatom/framework"
 	"log"
 	"time"
+
+	"github.com/tsundata/framework"
 )
 
 func Logger() framework.HandlerFunc {

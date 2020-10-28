@@ -1,3 +1,3 @@
-module github.com/sysatom/framework
+module github.com/tsundata/framework
 
 go 1.14
